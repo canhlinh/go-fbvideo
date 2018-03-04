@@ -1,5 +1,5 @@
 # go-fbvideo
-A small tool to upload video to a facebook resource (user, page, group, event)
+A small lib to help me upload video to a facebook resource (user, page, group, event)
 
 ### Example:
 ```
