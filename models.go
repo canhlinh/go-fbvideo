@@ -35,3 +35,14 @@ func NewErrorFromBody(body io.ReadCloser) *Error {
 	json.NewDecoder(body).Decode(&err)
 	return &err
 }
+
+type LongLivedToken struct {
+	AccessToken string `json:"access_token"`
+	ExpiresIn   int64  `json:"expires_in"`
+}
+
+func NewLongLivedTokenFromBody(body io.ReadCloser) *LongLivedToken {
+	var longLivedToken LongLivedToken
+	json.NewDecoder(body).Decode(&longLivedToken)
+	return &longLivedToken
+}
