@@ -13,6 +13,34 @@ import (
 	"strings"
 )
 
+//PrivacyValue Determines the privacy settings of the video.
+// If not supplied, this defaults to the privacy level granted to the app in the Login Dialog.
+// This field cannot be used to set a more open privacy setting than the one granted.
+type PrivacyValue string
+
+const (
+	PrivacyEveryOne         PrivacyValue = "EVERYONE"
+	PrivacyAllFriends       PrivacyValue = "ALL_FRIENDS"
+	PrivacyFriendsOfFriends PrivacyValue = "FRIENDS_OF_FRIENDS"
+	PrivacyCustom           PrivacyValue = "CUSTOM"
+	PrivacySelf             PrivacyValue = "SELF"
+)
+
+type Privacy struct {
+	Value PrivacyValue `json:"value"`
+	Allow string       `json:"allow"`
+	Deny  string       `json:"deny"`
+}
+
+func (p *Privacy) JSON() string {
+	d, _ := json.Marshal(p)
+	return string(d)
+}
+
+type Option struct {
+	Privacy *Privacy
+}
+
 // UploadSession facebook upload session struct
 type UploadSession struct {
 	// ID of a fb resource, possible value are user, page, event, group.
@@ -42,7 +70,7 @@ func NewUploadSession(filePath string, fbResourceID int64, accessToken string) *
 	uploadSession := &UploadSession{
 		ID:          fbResourceID,
 		AccessToken: accessToken,
-		Endpoint:    fmt.Sprintf("https://graph-video.facebook.com/v2.3/%d/videos", fbResourceID),
+		Endpoint:    fmt.Sprintf("https://graph-video.facebook.com/v2.6/%d/videos", fbResourceID),
 		Client:      &http.Client{},
 		FilePath:    filePath,
 	}
@@ -65,8 +93,8 @@ func NewUploadSession(filePath string, fbResourceID int64, accessToken string) *
 }
 
 // Upload upload the file to fb server
-func (uploadSession *UploadSession) Upload() error {
-	session, err := uploadSession.initialize()
+func (uploadSession *UploadSession) Upload(option Option) error {
+	session, err := uploadSession.initialize(option)
 	if err != nil {
 		return err
 	}
@@ -84,13 +112,16 @@ func (uploadSession *UploadSession) Upload() error {
 }
 
 // Initialize Create a new upload session
-func (uploadSession *UploadSession) initialize() (*SessionInfo, error) {
+func (uploadSession *UploadSession) initialize(option Option) (*SessionInfo, error) {
 
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	writer.WriteField("access_token", uploadSession.AccessToken)
 	writer.WriteField("upload_phase", "start")
 	writer.WriteField("file_size", fmt.Sprintf("%d", uploadSession.fileSize))
+	if option.Privacy != nil {
+		writer.WriteField("privacy", option.Privacy.JSON())
+	}
 	writer.Close()
 
 	req, _ := http.NewRequest(http.MethodPost, uploadSession.Endpoint, body)

@@ -5,17 +5,24 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	AccessToken = "EAADGAjjQ7sgBANGPH6KB2fsEZAf7EjCXJR0uoaVxQr25ODc4ZAeyrAoehV3ZAEOz9mrOKD5SxyJbVK7OwgsLeFhoM24c638f91zgNEnQ3ApGnN3OPe3t6S0ZAX3NwlTd3OC0sTZBKbUiw0TOz76l2jbEXwrZArb5qbDwUDfP0ZAsH1fxSv4BE4BRWZCPEzYgvzv8DRfGJgRts2tievuZATy6J"
-)
+func GetAccessToken() string {
+	return os.Getenv("FB_ACCESS_TOKEN")
+}
+
+func GetFbResourceID() int64 {
+	s := os.Getenv("FB_RESOURCE_ID")
+	resourceID, _ := strconv.ParseInt(s, 10, 64)
+	return resourceID
+}
 
 func TestNewUploadSession(t *testing.T) {
-	uploadSession := NewUploadSession("./testdata/video.mp4", 1849649771774166, AccessToken)
+	uploadSession := NewUploadSession("./testdata/video.mp4", GetFbResourceID(), GetAccessToken())
 	if uploadSession == nil {
 		t.Fatal("uploadSession should not be nill")
 	}
@@ -36,15 +43,24 @@ func TestNewUploadSession(t *testing.T) {
 	assert.Equal(t, uploadSession.fileSize, buf.Len())
 	assert.Equal(t, uploadSession.fileChunkNumber, 0)
 	assert.Equal(t, uploadSession.fileChunkFolder, "")
-	assert.Equal(t, uploadSession.AccessToken, AccessToken)
+	assert.Equal(t, uploadSession.AccessToken, GetAccessToken())
 	assert.NotNil(t, uploadSession.Client)
-	assert.Equal(t, uploadSession.Endpoint, fmt.Sprintf("https://graph-video.facebook.com/v2.3/%d/videos", 1849649771774166))
-	assert.EqualValues(t, uploadSession.ID, 1849649771774166)
+	assert.Equal(t, uploadSession.Endpoint, fmt.Sprintf("https://graph-video.facebook.com/v2.6/%d/videos", GetFbResourceID()))
+	assert.EqualValues(t, uploadSession.ID, GetFbResourceID())
 }
 
 func TestUpload(t *testing.T) {
-	uploadSession := NewUploadSession("./testdata/video.mp4", 1849649771774166, AccessToken)
-	if err := uploadSession.Upload(); err != nil {
-		t.Fatal(err)
-	}
+	uploadSession := NewUploadSession("./testdata/video.mp4", GetFbResourceID(), GetAccessToken())
+
+	t.Run("UpdateWithDefaultPrivacy", func(t *testing.T) {
+		if err := uploadSession.Upload(Option{}); err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("UpdateWithPrivacySelf", func(t *testing.T) {
+		if err := uploadSession.Upload(Option{Privacy: &Privacy{Value: PrivacySelf}}); err != nil {
+			t.Fatal(err)
+		}
+	})
 }
