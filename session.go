@@ -110,7 +110,7 @@ func (uploadSession *UploadSession) Upload(option Option) (string, error) {
 		return "", err
 	}
 
-	if err := uploadSession.finish(session.UploadSessionID); err != nil {
+	if err := uploadSession.finish(session.UploadSessionID, option); err != nil {
 		return "", err
 	}
 
@@ -186,13 +186,16 @@ func (uploadSession *UploadSession) uploadChunk(uploadSessionID string, chunkOff
 }
 
 // Finish finish the upload session and post the uploaded video to fb resource.
-func (uploadSession *UploadSession) finish(uploadSessionID string) error {
+func (uploadSession *UploadSession) finish(uploadSessionID string, option Option) error {
 
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 	writer.WriteField("access_token", uploadSession.AccessToken)
 	writer.WriteField("upload_phase", "finish")
 	writer.WriteField("upload_session_id", uploadSessionID)
+	if option.Privacy != nil {
+		writer.WriteField("privacy", option.Privacy.JSON())
+	}
 	writer.Close()
 
 	req, _ := http.NewRequest(http.MethodPost, uploadSession.Endpoint, body)

@@ -59,8 +59,16 @@ func TestUpload(t *testing.T) {
 	uploadSession := NewUploadSession("./testdata/SampleVideo_720x480_10mb.mp4", meID, accessToken)
 	t.Log(uploadSession.fileSize)
 	t.Run("UpdateWithPrivacySelf", func(t *testing.T) {
-		if _, err := uploadSession.Upload(Option{Privacy: &Privacy{Value: PrivacySelf}}); err != nil {
+		videoID, err := uploadSession.Upload(Option{Privacy: &Privacy{Value: PrivacySelf}})
+		if err != nil {
 			t.Fatal(err)
 		}
+
+		videoInfo, err := GetResourceInfo(videoID, accessToken)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fmt.Println(videoInfo["source"], videoInfo["id"])
 	})
 }
