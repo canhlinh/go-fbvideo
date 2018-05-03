@@ -93,22 +93,26 @@ func NewUploadSession(filePath string, fbResourceID int64, accessToken string) *
 }
 
 // Upload upload the file to fb server
-func (uploadSession *UploadSession) Upload(option Option) error {
+func (uploadSession *UploadSession) Upload(option Option) (string, error) {
 	session, err := uploadSession.initialize(option)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	uploadSession.fileChunkFolder = os.TempDir() + "/" + session.UploadSessionID
 	if err := os.MkdirAll(uploadSession.fileChunkFolder, 0777); err != nil {
-		return err
+		return "", err
 	}
 
 	if err := uploadSession.uploadChunk(session.UploadSessionID, session.ChunkOffset); err != nil {
-		return err
+		return "", err
 	}
 
-	return uploadSession.finish(session.UploadSessionID)
+	if err := uploadSession.finish(session.UploadSessionID); err != nil {
+		return "", err
+	}
+
+	return session.VideoID, nil
 }
 
 // Initialize Create a new upload session
