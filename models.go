@@ -1,6 +1,7 @@
 package fbvideo
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 )
@@ -16,6 +17,12 @@ type SessionInfo struct {
 type ChunkOffset struct {
 	StartOffset string `json:"start_offset"`
 	EndOffset   string `json:"end_offset"`
+}
+
+type ChunkInfo struct {
+	Path        string
+	Body        io.Reader
+	ContentType string
 }
 
 type Result struct {
@@ -47,4 +54,10 @@ func NewLongLivedTokenFromBody(body io.ReadCloser) *LongLivedToken {
 	var longLivedToken LongLivedToken
 	json.NewDecoder(body).Decode(&longLivedToken)
 	return &longLivedToken
+}
+
+func StringFromBody(body io.Reader) string {
+	buf := &bytes.Buffer{}
+	io.Copy(buf, body)
+	return buf.String()
 }
