@@ -10,7 +10,12 @@ import (
 type Map map[string]interface{}
 
 func GetAccessToken() string {
-	return os.Getenv("FB_ACCESS_TOKEN")
+	accessToken := os.Getenv("FB_ACCESS_TOKEN")
+	if accessToken == "" {
+		panic("access_token can not be empty")
+	}
+
+	return accessToken
 }
 
 func GetMe(accessToken string) (Map, error) {
@@ -23,11 +28,16 @@ func GetMe(accessToken string) (Map, error) {
 
 	var m Map
 	json.NewDecoder(res.Body).Decode(&m)
+
+	if res.StatusCode != 200 {
+		return nil, fmt.Errorf("%v", m["error"])
+	}
+
 	return m, nil
 }
 
-func GetResourceInfo(resourseID int64, accessToken string) (Map, error) {
-	endpoint := fmt.Sprintf("https://graph.facebook.com/%d?access_token=%s", resourseID, accessToken)
+func GetResourceInfo(resourseID string, accessToken string) (Map, error) {
+	endpoint := fmt.Sprintf("https://graph.facebook.com/%s?access_token=%s", resourseID, accessToken)
 
 	res, err := http.Get(endpoint)
 	if err != nil {

@@ -44,7 +44,7 @@ type Option struct {
 // UploadSession facebook upload session struct
 type UploadSession struct {
 	// ID of a fb resource, possible value are user, page, event, group.
-	ID int64
+	ID string
 
 	// AccessToken the token has permission to upload video to the fb resource.
 	AccessToken string
@@ -66,11 +66,11 @@ type UploadSession struct {
 }
 
 // NewUploadSession create a new fb upload session.
-func NewUploadSession(filePath string, fbResourceID int64, accessToken string) *UploadSession {
+func NewUploadSession(filePath string, fbResourceID string, accessToken string) *UploadSession {
 	uploadSession := &UploadSession{
 		ID:          fbResourceID,
 		AccessToken: accessToken,
-		Endpoint:    fmt.Sprintf("https://graph-video.facebook.com/v2.6/%d/videos", fbResourceID),
+		Endpoint:    fmt.Sprintf("https://graph-video.facebook.com/v2.6/%s/videos", fbResourceID),
 		Client:      &http.Client{},
 		FilePath:    filePath,
 	}

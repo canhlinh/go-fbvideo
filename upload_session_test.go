@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func GetMeID(accesstoken string) int64 {
-	meInfo, _ := GetMe(accesstoken)
-	meID, _ := strconv.ParseInt(meInfo["id"].(string), 10, 64)
+func GetMeID(accesstoken string) string {
+	meInfo, err := GetMe(accesstoken)
+	if err != nil {
+		panic(err)
+	}
+	meID := meInfo["id"].(string)
 	return meID
 }
 
@@ -45,7 +47,7 @@ func TestNewUploadSession(t *testing.T) {
 	assert.Equal(t, uploadSession.fileChunkFolder, "")
 	assert.Equal(t, uploadSession.AccessToken, GetAccessToken())
 	assert.NotNil(t, uploadSession.Client)
-	assert.Equal(t, uploadSession.Endpoint, fmt.Sprintf("https://graph-video.facebook.com/v2.6/%d/videos", meID))
+	assert.Equal(t, uploadSession.Endpoint, fmt.Sprintf("https://graph-video.facebook.com/v2.6/%s/videos", meID))
 	assert.EqualValues(t, uploadSession.ID, meID)
 }
 
