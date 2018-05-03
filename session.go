@@ -100,7 +100,7 @@ func (uploadSession *UploadSession) Upload(option Option) (string, error) {
 		return "", err
 	}
 
-	uploadSession.fileChunkFolder = "testdata" + "/fb" + session.UploadSessionID
+	uploadSession.fileChunkFolder = os.TempDir() + string(os.PathSeparator) + "fb" + session.UploadSessionID
 	if err := os.MkdirAll(uploadSession.fileChunkFolder, 0777); err != nil {
 		return "", err
 	}
