@@ -5,6 +5,8 @@ import (
 	"io"
 )
 
+type Map map[string]interface{}
+
 type SessionInfo struct {
 	*ChunkOffset
 	UploadSessionID string `json:"upload_session_id"`

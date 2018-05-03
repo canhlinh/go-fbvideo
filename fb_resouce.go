@@ -2,12 +2,11 @@ package fbvideo
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 )
-
-type Map map[string]interface{}
 
 func GetAccessToken() string {
 	accessToken := os.Getenv("FB_ACCESS_TOKEN")
@@ -26,12 +25,14 @@ func GetMe(accessToken string) (Map, error) {
 		return nil, err
 	}
 
+	if res.StatusCode > 299 {
+		var fbErr Error
+		json.NewDecoder(res.Body).Decode(&fbErr)
+		return nil, errors.New(fbErr.Struct.Message)
+	}
+
 	var m Map
 	json.NewDecoder(res.Body).Decode(&m)
-
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("%v", m["error"])
-	}
 
 	return m, nil
 }
@@ -44,7 +45,14 @@ func GetResourceInfo(resourseID string, accessToken string) (Map, error) {
 		return nil, err
 	}
 
+	if res.StatusCode > 299 {
+		var fbErr Error
+		json.NewDecoder(res.Body).Decode(&fbErr)
+		return nil, errors.New(fbErr.Struct.Message)
+	}
+
 	var m Map
 	json.NewDecoder(res.Body).Decode(&m)
+
 	return m, nil
 }
