@@ -1,6 +1,9 @@
 # go-fbvideo
 A small lib to help me upload video to a facebook resource (user, page, group, event)
 
+[![GoDoc](https://godoc.org/github.com/canhlinh/go-fbvideo?status.svg)](http://godoc.org/github.com/canhlinh/go-fbvideo)
+
+
 ### Example:
 ```
 package main
